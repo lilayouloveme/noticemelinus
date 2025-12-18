@@ -1,0 +1,72 @@
+_TITLE "Sophisticated Animated Mandelbrot in QB64"
+
+CONST width = 800
+CONST height = 600
+
+screen = _NEWIMAGE(width, height, 32)
+_DEST screen
+
+maxiter = 1000
+centerR = -0.75 ' Interesting point to zoom into
+centerI = 0.1
+zoom = 0.5 ' Initial zoom
+
+DO
+    minr = centerR - 1.5 / zoom
+    maxr = centerR + 1.5 / zoom
+    mini = centerI - 1.0 / zoom
+    maxi = centerI + 1.0 / zoom
+
+    FOR py = 0 TO height - 1
+        ci = mini + (maxi - mini) * py / (height - 1)
+        FOR px = 0 TO width - 1
+            cr = minr + (maxr - minr) * px / (width - 1)
+            zr = 0: zi = 0
+            zrsqr = 0: zisqr = 0
+            iter = 0
+            DO WHILE iter < maxiter AND zrsqr + zisqr < 4
+                temp = zrsqr - zisqr + cr
+                zi = 2 * zr * zi + ci
+                zr = temp
+                zrsqr = zr * zr
+                zisqr = zi * zi
+                iter = iter + 1
+            LOOP
+            IF iter = maxiter THEN
+                PSET (px, py), _RGB32(0, 0, 0)
+            ELSE
+                ' Smooth coloring
+                mu = iter + 1 - LOG(LOG(SQR(zrsqr + zisqr))) / LOG(2)
+                hue = mu / 100 * 360 ' Adjust for color spread
+                sat = 1
+                val = 1 - (mu MOD 1) * 0.5
+                c = hsv_to_rgb(hue, sat, val)
+                PSET (px, py), c
+            END IF
+        NEXT px
+    NEXT py
+
+    _DISPLAY
+    zoom = zoom * 1.02 ' Gentle zoom
+    _LIMIT 5 ' Slow for visibility
+
+LOOP UNTIL INKEY$ <> ""
+
+SYSTEM
+
+FUNCTION hsv_to_rgb (h, s, v)
+    c = v * s
+    x = c * (1 - ABS(((h / 60) MOD 2) - 1))
+    m = v - c
+    IF h < 60 THEN r = c: g = x: b = 0
+    ELSEIF h < 120 THEN r = x: g = c: b = 0
+    ELSEIF h < 180 THEN r = 0: g = c: b = x
+    ELSEIF h < 240 THEN r = 0: g = x: b = c
+    ELSEIF h < 300 THEN r = x: g = 0: b = c
+    ELSE r = c: g = 0: b = x
+    END IF
+    r = (r + m) * 255
+    g = (g + m) * 255
+    b = (b + m) * 255
+    hsv_to_rgb = _RGB32(r, g, b)
+END FUNCTION
