@@ -1,12 +1,13 @@
 _Title "Sophisticated Animated Mandelbrot in QB64"
 
-Const sw = 800
-Const sh = 600
+Const sw = 320
+Const sh = 200
 
 myScreen = _NewImage(sw, sh, 32)
+SCREEN myScreen
 _Dest myScreen
 
-maxiter = 1000
+maxiter = 30
 centerR = -0.75 ' Interesting point to zoom into
 centerI = 0.1
 zoom = 0.5 ' Initial zoom
